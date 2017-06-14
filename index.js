@@ -6,6 +6,7 @@ const fs = require('fs');
 const meow = require('meow');
 const hasha = require('hasha');
 const chalk = require('chalk');
+const path = require('path');
 const logUpdate = require('log-update');
 
 const cli = meow({
@@ -21,7 +22,7 @@ hasha.fromFile(fileName, { algorithm: 'md5' }).then(hash => {
     const uniqPathId = hash.split('').slice(0, 16).join('');
     const randomId = hash.split('').reverse().slice(0, 26).join('');
     const formData = {
-        file: fs.createReadStream(__dirname + '/' + fileName),
+        file: fs.createReadStream(path.resolve(process.cwd() + '/' + fileName)),
         id: randomId,
         name: fileName
     };
@@ -45,16 +46,16 @@ hasha.fromFile(fileName, { algorithm: 'md5' }).then(hash => {
 
 function pollResult(uniqPathId, randomId) {
     getStatus('status', uniqPathId, randomId).then(result => {
-        logUpdate(chalk.blue(`${result.auto_progress} %`));
-        logUpdate.done();
+        logUpdate(chalk.blue(`${result.compress_progress} %`));
         if (result.auto_progress < 100) {
             setTimeout(() => {
                 pollResult(uniqPathId, randomId);
             }, 1000);
         } else {
+            logUpdate.done();
             getStatus('panel', uniqPathId, randomId).then((result) => {
                 request.get(`http://optimizilla.com/${result.image.compressed_url}`)
-                    .pipe(fs.createWriteStream(__dirname + '/' + result.image.result));
+                    .pipe(fs.createWriteStream(path.resolve(process.cwd() + '/' + result.image.result)));
                 logUpdate(chalk.green(`Saved: ${result.image.savings}`));
             });
         }
