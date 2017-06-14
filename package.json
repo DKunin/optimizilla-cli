@@ -1,0 +1,33 @@
+{
+  "name": "optimizilla-cli",
+  "version": "1.0.0",
+  "private": false,
+  "bin": {
+    "optimizilla": "index.js"
+  },
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/dkunin/optimizilla-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dkunin/optimizilla-cli/issues"
+  },
+  "scripts": {
+  },
+  "homepage": "https://github.com/dkunin/optimizilla-cli",
+  "keywords": [
+    "optmimizilla",
+    "cli",
+    "images"
+  ],
+  "license": "MIT",
+  "description": "Script to utilize optmimizilla and avoid the pesky ui",
+  "dependencies": {
+    "chalk": "1.1.3",
+    "hasha": "3.0.0",
+    "log-update": "2.0.0",
+    "meow": "3.7.0",
+    "request": "2.81.0"
+  }
+}
