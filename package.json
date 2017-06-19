@@ -13,8 +13,7 @@
   "bugs": {
     "url": "https://github.com/dkunin/optimizilla-cli/issues"
   },
-  "scripts": {
-  },
+  "scripts": {},
   "homepage": "https://github.com/dkunin/optimizilla-cli",
   "keywords": [
     "optmimizilla",
@@ -25,6 +24,7 @@
   "description": "Script to utilize optmimizilla and avoid the pesky ui",
   "dependencies": {
     "chalk": "1.1.3",
+    "easy-table": "1.1.0",
     "hasha": "3.0.0",
     "log-update": "2.0.0",
     "meow": "3.7.0",

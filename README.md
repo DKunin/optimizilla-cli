@@ -16,6 +16,15 @@ Simple node script, used via cli - to upload and process images via [http://opti
     optimizilla ./some-file.png
 ```
 
+## RoadMap
+
+- [x] Multiple files upload
+- [ ] Seperate into helpers
+- [ ] Better error checking
+- [ ] Options
+- [ ] Help text
+- [ ] Tests
+
 ## Contribute
 
 PRs accepted.
