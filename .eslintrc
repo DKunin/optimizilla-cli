@@ -1,8 +1,8 @@
 {
     "extends": "eslint:recommended",
     "rules": {
+        "no-constant-condition": 0,
         "no-console": 1,
-        "valid-jsdoc": 2,
         "no-underscore-dangle": 2,
         "no-empty": [
             2, {
@@ -88,7 +88,7 @@
         ],
         "dot-notation": 2,
         "eol-last": 2,
-        "wrap-iife": 2,
+
         "semi": [
             2,
             "always"

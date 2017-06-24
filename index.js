@@ -1,41 +1,31 @@
 #!/usr/bin/env node
-'use strict';
 
-const request = require('request');
 const fs = require('fs');
 const meow = require('meow');
 const hasha = require('hasha');
 const path = require('path');
-const logUpdate = require('log-update');
-const Table = require('easy-table');
-let globalData = [];
+const async = require('./lib/async');
+const printResult = require('./lib/print-result');
+const getStatus = require('./lib/get-status');
+const request = require('request');
 
 const cli = meow({
-    help: ['']
+    help: [
+        `
+        optimizilla ./someimage.png
+    `
+    ]
 });
 
 if (!cli.input.length) {
     throw new Error('Please add file or files');
 }
 
-function printResult(result) {
-    if (!globalData.length) {
-        globalData = [result];
-    } else {
-        globalData = globalData.reduce((newArray, singleItem) => {
-            if (singleItem.uniqPathId === result.uniqPathId) {
-                return newArray.concat(result);
-            }
-            return newArray.concat(singleItem);
-        }, []);
-        const alreadyInTable = globalData.find(({ uniqPathId }) => uniqPathId === result.uniqPathId);
-        if (!alreadyInTable) {
-            globalData = globalData.concat([ result ]);
-        }
-    }
-    logUpdate(Table.print(globalData));
-}
-
+/**
+ * startProcessingFile
+ * @param {String}
+ * @return {Promise}
+ */
 function startProcessingFile(fileName) {
     return new Promise((resolve, reject) => {
         hasha.fromFile(fileName, { algorithm: 'md5' }).then(hash => {
@@ -66,105 +56,64 @@ function startProcessingFile(fileName) {
     });
 }
 
-function pollResult({ uniqPathId, randomId, fileName }) {
-    getStatus('status', uniqPathId, randomId, fileName).then(({
-        body,
-        fileName,
-        uniqPathId,
-        randomId
-    }) => {
-        printResult({
-            fileName,
-            uniqPathId,
-            randomId,
-            status: 'processing',
-            percent: body.auto_progress
-        });
-        if (body.auto_progress < 100) {
-            setTimeout(() => {
-                pollResult({ uniqPathId, randomId, fileName });
-            }, 1000);
-        } else {
-            getStatus('panel', uniqPathId, randomId, fileName).then(({
-                body,
-                fileName,
-                uniqPathId,
-                randomId
-            }) => {
-                request
-                    .get(`http://optimizilla.com/${body.image.compressed_url}`)
-                    .pipe(
-                        fs.createWriteStream(
-                            path.resolve(
-                                process.cwd() + '/' + body.image.result
-                            )
-                        )
-                    );
-
-                printResult({
-                    fileName,
-                    uniqPathId,
-                    randomId,
-                    status: 'success',
-                    savings: body.image.savings
-                });
-            });
-        }
-    });
-}
-
-function getStatus(command, uniqPathId, randomId, fileName) {
-    return new Promise((resolve, reject) => {
-        request.get(
-            `http://optimizilla.com/${command}/${uniqPathId}/${randomId}?rnd=${Math.random()}`,
-            function(error, response, body) {
-                if (error) {
-                    reject({
-                        error,
-                        uniqPathId,
-                        randomId,
-                        fileName
-                    });
-                }
-
-                if (response && response.statusCode === 200) {
-                    resolve({
-                        body: JSON.parse(body),
-                        uniqPathId,
-                        randomId,
-                        fileName
-                    });
-                }
-            }
+/**
+ * downloadFinalFile
+ * @param {Object} body
+ * @param {Object} options
+ */
+function downloadFinalFile(body, options) {
+    request
+        .get(`http://optimizilla.com/${body.image.compressed_url}`)
+        .pipe(
+            fs.createWriteStream(
+                path.resolve(process.cwd() + '/' + body.image.result)
+            )
         );
-    });
+    printResult(
+        Object.assign(options, {
+            status: 'success',
+            savings: body.image.savings
+        })
+    );
 }
+
+/**
+ * Main process generator
+ * @param {Object} options
+ * @return {Function}
+ */
+function processGenerator(options) {
+    return function*() {
+        let content = {};
+        content = yield getStatus('auto', options);
+
+        while (true) {
+            content = yield getStatus('status', options);
+            printResult(
+                Object.assign(options, {
+                    status: 'processing',
+                    percent: content.body.auto_progress
+                })
+            );
+            if (content.body.auto_progress >= 100) {
+                break;
+            }
+        }
+
+        content = yield getStatus('panel', options);
+        downloadFinalFile(content.body, options);
+        return content;
+    };
+}
+
 cli.input.forEach(singleFileName => {
     startProcessingFile(singleFileName)
-        .then(({ fileName, uniqPathId, randomId }) => {
-            return getStatus('auto', uniqPathId, randomId, fileName);
-        })
-        .then(({ body, fileName, uniqPathId, randomId }) => {
-            printResult({ fileName, uniqPathId, randomId, status: 'uploaded' });
-            if (body.status === 'success') {
-                pollResult({ uniqPathId, randomId, fileName });
-            } else {
-                printResult({
-                    fileName,
-                    uniqPathId,
-                    randomId,
-                    status: 'error',
-                    details: body
-                });
-            }
-        })
-        .catch(({ fileName, uniqPathId, randomId, error }) => {
-            printResult({
-                fileName,
-                uniqPathId,
-                randomId,
-                status: 'error',
-                details: error
-            });
+        .then(options => async(processGenerator(options)))
+        .catch(options => {
+            printResult(
+                Object.assign(options, {
+                    status: 'error'
+                })
+            );
         });
 });

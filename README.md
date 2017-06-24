@@ -19,7 +19,7 @@ Simple node script, used via cli - to upload and process images via [http://opti
 ## RoadMap
 
 - [x] Multiple files upload
-- [ ] Seperate into helpers
+- [x] Seperate into helpers
 - [ ] Better error checking
 - [ ] Options
 - [ ] Help text
