@@ -3,22 +3,35 @@
 const fs = require('fs');
 const meow = require('meow');
 const hasha = require('hasha');
+const url = require('url');
 const path = require('path');
 const async = require('./lib/async');
 const printResult = require('./lib/print-result');
 const getStatus = require('./lib/get-status');
 const request = require('request');
 
-const cli = meow({
-    help: [
-        `
-        optimizilla ./someimage.png
+const cli = meow(
     `
-    ]
-});
+    Usage
+      $ optimizilla <input>
+
+    Options
+      --output, -o  Destination of the optimized file
+      --replace, -r  Replace the original file
+
+    Examples
+      $ optimizilla xpto.jpg --output ./ --replace
+`,
+    {
+        alias: {
+            o: 'output',
+            r: 'replace'
+        }
+    }
+);
 
 if (!cli.input.length) {
-    throw new Error('Please add file or files');
+    cli.showHelp(-1);
 }
 
 /**
@@ -26,14 +39,16 @@ if (!cli.input.length) {
  * @param {String}
  * @return {Promise}
  */
-function startProcessingFile(fileName) {
+function startProcessingFile(fileName, flags) {
     return new Promise((resolve, reject) => {
         hasha.fromFile(fileName, { algorithm: 'md5' }).then(hash => {
             const uniqPathId = hash.split('').slice(0, 16).join('');
             const randomId = hash.split('').reverse().slice(0, 26).join('');
             const formData = {
                 file: fs.createReadStream(
-                    path.resolve(process.cwd() + '/' + fileName)
+                    fileName[0] == path.sep
+                        ? fileName
+                        : path.resolve(process.cwd() + path.sep + fileName)
                 ),
                 id: randomId,
                 name: fileName
@@ -61,14 +76,17 @@ function startProcessingFile(fileName) {
  * @param {Object} body
  * @param {Object} options
  */
-function downloadFinalFile(body, options) {
+function downloadFinalFile(body, options, flags) {
+    let outputFile = flags.output ? flags.output : process.cwd();
+    if (flags.replace) {
+        outputFile = options.fileName;
+    } else {
+        outputFile = path.resolve(outputFile + path.sep + body.image.result);
+    }
+
     request
-        .get(`http://optimizilla.com/${body.image.compressed_url}`)
-        .pipe(
-            fs.createWriteStream(
-                path.resolve(process.cwd() + '/' + body.image.result)
-            )
-        );
+        .get(url.resolve('http://optimizilla.com/', body.image.compressed_url))
+        .pipe(fs.createWriteStream(outputFile));
     printResult(
         Object.assign(options, {
             status: 'success',
@@ -82,7 +100,7 @@ function downloadFinalFile(body, options) {
  * @param {Object} options
  * @return {Function}
  */
-function processGenerator(options) {
+function processGenerator(options, flags) {
     return function*() {
         let content = {};
         content = yield getStatus('auto', options);
@@ -101,14 +119,14 @@ function processGenerator(options) {
         }
 
         content = yield getStatus('panel', options);
-        downloadFinalFile(content.body, options);
+        downloadFinalFile(content.body, options, flags);
         return content;
     };
 }
 
 cli.input.forEach(singleFileName => {
-    startProcessingFile(singleFileName)
-        .then(options => async(processGenerator(options)))
+    startProcessingFile(singleFileName, cli.flags)
+        .then(options => async(processGenerator(options, cli.flags)))
         .catch(options => {
             printResult(
                 Object.assign(options, {

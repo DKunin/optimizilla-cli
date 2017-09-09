@@ -6,28 +6,36 @@ Simple node script, used via cli - to upload and process images via [http://opti
 
 ## Install
 
-```
     npm i optimizilla-cli -g
-```
 
 ## Usage
 
-```
-    optimizilla ./some-file.png
-```
+
+    optimizilla [FILENAME]
+
+    Options
+      --output, -o  Destination of the optimized file
+      --replace, -r  Replace the original file
+
+    Examples
+      $ optimizilla xpto.jpg --output ./ --replace
 
 ## RoadMap
 
 - [x] Multiple files upload
 - [x] Seperate into helpers
 - [ ] Better error checking
-- [ ] Options
-- [ ] Help text
+- [x] Options
+- [x] Help text
 - [ ] Tests
 
 ## Contribute
 
 PRs accepted.
+
+## Contributers
+
+- [t100n](https://github.com/t100n)
 
 ## License
 
