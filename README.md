@@ -33,7 +33,7 @@ Simple node script, used via cli - to upload and process images via [http://opti
 
 PRs accepted.
 
-## Contributers
+## Contributors
 
 - [t100n](https://github.com/t100n)
 
