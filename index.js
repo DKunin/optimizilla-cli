@@ -129,7 +129,9 @@ cli.input
         if (singleFileName.toLowerCase().match(/png|jpg|jpeg/)) {
             return newArray.concat(singleFileName);
         }
-        console.log(`${singleFileName} format is invalid, only png/jpeg/jpg can be used`);
+        console.log(
+            `${singleFileName} format is invalid, only png/jpeg/jpg can be used`
+        );
         return newArray;
     }, [])
     .forEach(singleFileName => {

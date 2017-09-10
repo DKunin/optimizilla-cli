@@ -1,6 +1,6 @@
 {
   "name": "optimizilla-cli",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "private": false,
   "bin": {
     "optimizilla": "index.js"
@@ -23,7 +23,6 @@
   "license": "MIT",
   "description": "Script to utilize optmimizilla and avoid the pesky ui",
   "dependencies": {
-    "chalk": "1.1.3",
     "easy-table": "1.1.0",
     "hasha": "3.0.0",
     "log-update": "2.0.0",
