@@ -1,6 +1,6 @@
 {
   "name": "optimizilla-cli",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "private": false,
   "bin": {
     "optimizilla": "index.js"
