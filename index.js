@@ -124,14 +124,22 @@ function processGenerator(options, flags) {
     };
 }
 
-cli.input.forEach(singleFileName => {
-    startProcessingFile(singleFileName, cli.flags)
-        .then(options => async(processGenerator(options, cli.flags)))
-        .catch(options => {
-            printResult(
-                Object.assign(options, {
-                    status: 'error'
-                })
-            );
-        });
-});
+cli.input
+    .reduce((newArray, singleFileName) => {
+        if (singleFileName.toLowerCase().match(/png|jpg|jpeg/)) {
+            return newArray.concat(singleFileName);
+        }
+        console.log(`${singleFileName} format is invalid, only png/jpeg/jpg can be used`);
+        return newArray;
+    }, [])
+    .forEach(singleFileName => {
+        startProcessingFile(singleFileName, cli.flags)
+            .then(options => async(processGenerator(options, cli.flags)))
+            .catch(options => {
+                printResult(
+                    Object.assign(options, {
+                        status: 'error'
+                    })
+                );
+            });
+    });
