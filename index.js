@@ -9,6 +9,7 @@ const async = require('./lib/async');
 const printResult = require('./lib/print-result');
 const getStatus = require('./lib/get-status');
 const request = require('request');
+const MAIN_HOST = 'http://optimizilla.com/';
 
 const cli = meow(
     `
@@ -18,6 +19,7 @@ const cli = meow(
     Options
       --output, -o  Destination of the optimized file
       --replace, -r  Replace the original file
+      --dry, -d  Dry run, upload, optimize and print out links
 
     Examples
       $ optimizilla xpto.jpg --output ./ --replace
@@ -25,7 +27,8 @@ const cli = meow(
     {
         alias: {
             o: 'output',
-            r: 'replace'
+            r: 'replace',
+            d: 'dry'
         }
     }
 );
@@ -56,7 +59,7 @@ function startProcessingFile(fileName, flags) {
 
             request.post(
                 {
-                    url: 'http://optimizilla.com/upload/' + uniqPathId,
+                    url: `${MAIN_HOST}/upload/${uniqPathId}`,
                     formData
                 },
                 error => {
@@ -84,15 +87,25 @@ function downloadFinalFile(body, options, flags) {
         outputFile = path.resolve(outputFile + path.sep + body.image.result);
     }
 
-    request
-        .get(url.resolve('http://optimizilla.com/', body.image.compressed_url))
-        .pipe(fs.createWriteStream(outputFile));
-    printResult(
-        Object.assign(options, {
-            status: 'success',
-            savings: body.image.savings
-        })
-    );
+    if (cli.flags.dry) {
+        printResult(
+            Object.assign(options, {
+                status: 'success',
+                savings: body.image.savings,
+                compressedUrl: url.resolve(MAIN_HOST, body.image.compressed_url)
+            })
+        );
+    } else {
+        request
+            .get(url.resolve(MAIN_HOST, body.image.compressed_url))
+            .pipe(fs.createWriteStream(outputFile));
+        printResult(
+            Object.assign(options, {
+                status: 'success',
+                savings: body.image.savings
+            })
+        );
+    }
 }
 
 /**
