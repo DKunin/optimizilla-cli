@@ -24,7 +24,6 @@
   "description": "Script to utilize optmimizilla and avoid the pesky ui",
   "dependencies": {
     "easy-table": "1.1.0",
-    "hasha": "3.0.0",
     "log-update": "2.0.0",
     "meow": "3.7.0",
     "request": "2.87.0"

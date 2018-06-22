@@ -2,7 +2,6 @@
 
 const fs = require('fs');
 const meow = require('meow');
-const hasha = require('hasha');
 const url = require('url');
 const path = require('path');
 const async = require('./lib/async');
@@ -38,39 +37,72 @@ if (!cli.input.length) {
 }
 
 /**
+ * Guid function to generate uid
+ * @return {Function}
+ */
+var guid = (function() {
+    var counter = 0;
+
+    return function(prefix) {
+        var guid = new Date().getTime().toString(32),
+            i;
+
+        for (i = 0; i < 5; i++) {
+            guid += Math.floor(Math.random() * 65535).toString(32);
+        }
+
+        return (prefix || 'o_') + guid + (counter++).toString(32);
+    };
+})();
+
+/**
+ * Random string generator
+ * @return {String}
+ */
+function randomString() {
+    for (
+        var t = '0123456789abcdefghiklmnopqrstuvwxyz', e = 16, i = '', n = 0;
+        e > n;
+        n++
+    ) {
+        var a = Math.floor(Math.random() * t.length);
+        i += t.substring(a, a + 1);
+    }
+    return i;
+}
+
+/**
  * startProcessingFile
  * @param {String}
  * @return {Promise}
  */
-function startProcessingFile(fileName, flags) {
+function startProcessingFile(fileName) {
     return new Promise((resolve, reject) => {
-        hasha.fromFile(fileName, { algorithm: 'md5' }).then(hash => {
-            const uniqPathId = hash.split('').slice(0, 16).join('');
-            const randomId = hash.split('').reverse().slice(0, 26).join('');
-            const formData = {
-                file: fs.createReadStream(
-                    fileName[0] == path.sep
-                        ? fileName
-                        : path.resolve(process.cwd() + path.sep + fileName)
-                ),
-                id: randomId,
-                name: fileName
-            };
+        let uniqPathId = randomString();
+        let randomId = guid();
+        const formData = {
+            file: fs.createReadStream(
+                fileName[0] == path.sep
+                    ? fileName
+                    : path.resolve(process.cwd() + path.sep + fileName)
+            ),
+            id: randomId,
+            name: fileName
+        };
 
-            request.post(
-                {
-                    url: `${MAIN_HOST}/upload/${uniqPathId}`,
-                    formData
-                },
-                error => {
-                    if (error) {
-                        reject({ fileName, uniqPathId, randomId, error });
-                    } else {
-                        resolve({ fileName, uniqPathId, randomId });
-                    }
+        request.post(
+            {
+                url: `${MAIN_HOST}/upload/${uniqPathId}`,
+                formData
+            },
+            error => {
+                if (error) {
+                    reject({ fileName, uniqPathId, randomId, error });
+                } else {
+                    resolve({ fileName, uniqPathId, randomId });
                 }
-            );
-        });
+            }
+        );
     });
 }
 
