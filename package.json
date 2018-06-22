@@ -1,6 +1,6 @@
 {
   "name": "optimizilla-cli",
-  "version": "3.3.0",
+  "version": "4.0.0",
   "private": false,
   "bin": {
     "optimizilla": "index.js"
@@ -27,6 +27,6 @@
     "hasha": "3.0.0",
     "log-update": "2.0.0",
     "meow": "3.7.0",
-    "request": "2.81.0"
+    "request": "2.87.0"
   }
 }

@@ -9,7 +9,7 @@ const async = require('./lib/async');
 const printResult = require('./lib/print-result');
 const getStatus = require('./lib/get-status');
 const request = require('request');
-const MAIN_HOST = 'http://optimizilla.com/';
+const MAIN_HOST = 'http://imagecompressor.com';
 
 const cli = meow(
     `
