@@ -16,12 +16,12 @@
   "scripts": {},
   "homepage": "https://github.com/dkunin/optimizilla-cli",
   "keywords": [
-    "optmimizilla",
+    "optimizilla",
     "cli",
     "images"
   ],
   "license": "MIT",
-  "description": "Script to utilize optmimizilla and avoid the pesky ui",
+  "description": "Script to utilize optimizilla and avoid the pesky ui",
   "dependencies": {
     "easy-table": "1.1.0",
     "log-update": "2.0.0",
