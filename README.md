@@ -1,4 +1,4 @@
-# Script to utilize optmimizilla and avoid the pesky ui
+# Script to utilize optimizilla and avoid the pesky ui
 
 Simple node script, used via cli - to upload and process images via [http://optimizilla.com/](http://optimizilla.com/)
 
